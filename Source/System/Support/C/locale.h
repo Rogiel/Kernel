@@ -1,0 +1,1 @@
+typedef int locate_t;

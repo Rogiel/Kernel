@@ -1,0 +1,33 @@
+set(ARCH_TARGET X86)
+set(QEMU_TARGET i386)
+set(TARGET i386-elf)
+
+set(TOOLCHAIN_DIR /usr/local/opt/llvm)
+set(LTO -flto)
+set(OPT "-O1")
+set(VECTORIZE "-fno-vectorize -mno-sse -mno-avx")
+
+set(FLAGS "-target ${TARGET} -fno-exceptions -ffreestanding -nostdlib ${OPT} ${LTO} ${VECTORIZE}")
+
+include(CMakeForceCompiler)
+
+set(CMAKE_SYSROOT)
+set(CMAKE_OSX_SYSROOT)
+set(CMAKE_ASM_COMPILER ${TOOLCHAIN_DIR}/bin/clang)
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${FLAGS}")
+
+CMAKE_FORCE_C_COMPILER(${TOOLCHAIN_DIR}/bin/clang Clang)
+set(CMAKE_C_COMPILER ${TOOLCHAIN_DIR}/bin/clang)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS}")
+
+CMAKE_FORCE_CXX_COMPILER(${TOOLCHAIN_DIR}/bin/clang++ Clang)
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_DIR}/bin/clang++)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS} -std=c++17 -D__ELF__")
+
+set(CMAKE_C_LINK_FLAGS "-T ${CMAKE_CURRENT_LIST_DIR}/../../Source/System/Machine/${ARCH_TARGET}/Linker.ld ${OPT}")
+set(CMAKE_CXX_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} ${FLAGS}")
+
+set(CMAKE_C_LINK_EXECUTABLE "${TOOLCHAIN_DIR}/bin/clang <CMAKE_C_LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES> -o <TARGET>")
+set(CMAKE_CXX_LINK_EXECUTABLE "${TOOLCHAIN_DIR}/bin/clang++ <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
+
+set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${TOOLCHAIN_DIR}/bin/clang++ <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")

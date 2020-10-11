@@ -1,0 +1,80 @@
+sudo: false
+language: cpp
+cache: apt
+
+git:
+  depth: 1
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'george-edison55-precise-backports']
+          packages: ['g++-4.9', 'valgrind', 'cmake', 'cmake-data']
+      env:
+        - COMPILER=g++-4.9
+        - NO_EXCEPTIONS=OFF
+
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'george-edison55-precise-backports']
+          packages: ['g++-5', 'valgrind', 'cmake', 'cmake-data']
+      env:
+        - COMPILER=g++-5
+        - NO_EXCEPTIONS=OFF
+
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'george-edison55-precise-backports']
+          packages: ['g++-5', 'valgrind', 'cmake', 'cmake-data']
+      env:
+        - COMPILER=g++-5
+        - NO_EXCEPTIONS=ON
+
+    - os: linux
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'george-edison55-precise-backports']
+          packages: ['g++-4.9', 'valgrind', 'cmake', 'cmake-data']
+      compiler: clang
+      env:
+        - COMPILER=clang++
+        - NO_EXCEPTIONS=OFF
+
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'george-edison55-precise-backports', 'llvm-toolchain-precise-3.8']
+          packages: ['clang-3.8', 'valgrind', 'cmake', 'cmake-data']
+      env:
+        - COMPILER=clang++-3.8
+        - NO_EXCEPTIONS=OFF
+
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'george-edison55-precise-backports', 'llvm-toolchain-precise-3.8']
+          packages: ['clang-3.8', 'valgrind', 'cmake', 'cmake-data']
+      env:
+        - COMPILER=clang++-3.8
+        - NO_EXCEPTIONS=ON
+
+install:
+  - export CXX=$COMPILER
+  - $CXX --version
+
+  - mkdir bin
+  - cd bin
+  - cmake .. -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=Release -DTESTS_NO_EXCEPTIONS=$NO_EXCEPTIONS -DTESTS_NO_DEATH_TESTS=ON
+
+script:
+  - make -j2
+  - valgrind --error-exitcode=1 --leak-check=full --show-reachable=yes ./test/function2_tests
